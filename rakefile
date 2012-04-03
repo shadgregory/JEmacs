@@ -1,0 +1,14 @@
+require 'raven'
+require 'rake/clean'
+
+CLEAN.include('target')
+
+dependency 'deps' do | task |
+  task.libs = Dir.glob('lib/**/*.*')
+end 
+
+javac 'compile' => 'deps' do |t|
+    t.build_path << "src"
+end
+
+jar 'jemacs.jar' => 'compile'

@@ -36,6 +36,7 @@ public class SwingFrame extends EFrame
     jframe.setTitle("JEmacs");
     menuBar = new JMenuBar();
     jframe.setJMenuBar(menuBar);
+    jframe.setIconImage(new ImageIcon("kawa-logo.png").getImage());
   }
 
   public boolean isLive()
@@ -76,7 +77,6 @@ public class SwingFrame extends EFrame
   public void setMenuBar (LList menu)
   {
     menuBar.removeAll();
-    System.out.println("menu : " + menu);
     java.util.Enumeration e = menu.elements();
     for (int i = 0;  e.hasMoreElements(); i++)
       {

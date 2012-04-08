@@ -1,3 +1,5 @@
+
+/* -*- mode: java; c-basic-offset: 2; indent-tabs-mode: nil -*- */
 // Copyright (c) 2002  Per M.A. Bothner.
 // This is free software;  for terms and warranty disclaimer see ./COPYING.
 
@@ -128,25 +130,16 @@ public class SwingBuffer extends Buffer
     int offset = 0;
     Segment segment = new Segment();
     int numRead = 0;
+    StringBuilder bufferSB = new StringBuilder();
     while (offset < length) {
       int count = length;
       if (count > 4096)
         count = 4096;
-      try
-        {
-          doc.getText(offset, count, segment);
-        }
-      catch (BadLocationException e)
-        {
-          throw e;
-        }
+      doc.getText(offset, count, segment);
+      bufferSB.append(segment.array, segment.offset, segment.count);
       offset += count;
     }
-    StringBuilder bufferSB = new StringBuilder();
-    for (char c : segment.array)
-      {
-        bufferSB.append(c);
-      }
+
     return bufferSB.toString();
   }
 
@@ -207,8 +200,6 @@ public class SwingBuffer extends Buffer
 
   public String diff(String bufferString, String fileString)
   {
-    System.out.println("bufferString : " + bufferString);
-    System.out.println("fileString : " + fileString);
     String[] x = bufferString.split("\\n");
     String[] y = fileString.split("\\n");
 
@@ -232,13 +223,21 @@ public class SwingBuffer extends Buffer
     // recover LCS itself and print out non-matching lines to standard output
     int i = 0, j = 0;
     StringBuffer stringDiff = new StringBuffer();
-    while(i < M && j < N) {
-      if (x[i].equals(y[j])) {
-        i++;
-        j++;
-      }
-      else if (opt[i+1][j] >= opt[i][j+1]) stringDiff.append("< " + x[i++] + "\n");
-      else                                 stringDiff.append("> " + y[j++] + "\n");
+    while(i < M && j < N) 
+      {
+      if (x[i].equals(y[j])) 
+	{
+	  i++;
+	  j++;
+	}
+      else if (opt[i+1][j] >= opt[i][j+1]) 
+	{
+	  stringDiff.append("< " + x[i++] + "\n");
+	}
+      else 
+	{
+	  stringDiff.append("> " + y[j++] + "\n");
+	}
     }
 
     // dump out one remainder of one string if the other is exhausted
@@ -248,8 +247,6 @@ public class SwingBuffer extends Buffer
     }
     return stringDiff.toString();
   }
-
-
 
   public void save(Writer out)
     throws Exception

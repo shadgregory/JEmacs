@@ -4,6 +4,7 @@
 package gnu.jemacs.buffer;
 import gnu.lists.*;
 import gnu.mapping.*;
+import java.util.*;
 
 public abstract class EWindow
 {
@@ -50,6 +51,86 @@ public abstract class EWindow
     Buffer.setCurrent(buffer);
 
   }
+
+  public void saveBuffersKillEmacs ()
+    {
+	java.util.Hashtable buffers = gnu.jemacs.buffer.Buffer.getFileBuffers();
+	if (buffers.size() == 0)
+	    java.lang.System.exit(0);
+	Enumeration k = buffers.keys();
+	boolean promptOnExit = false;
+	boolean cancelExit = false;
+	boolean finished = false;
+	boolean saveAll = false;
+	boolean noAll = false;
+	while (k.hasMoreElements())
+	  {
+	    String key = (String) k.nextElement();
+	    Buffer theBuffer = (Buffer)buffers.get(key);
+	    if (noAll)
+	      break;
+	    if (saveAll)
+	      {
+		theBuffer.save();
+		continue;
+	      }
+	    try
+	      {
+		if (theBuffer.upToDate())
+		  continue;
+		else
+		  {
+		    int selection =
+		      frame.showCancelQuestionMessage(
+						      " Save file " +
+						      theBuffer.getFileName() +
+						      "?");
+		    switch (selection)
+		      {
+		      case 0: theBuffer.save();break;
+		      case 1: promptOnExit = true;break;
+		      case 2: break;
+		      case 3:
+			String diff = new String();
+			try
+			  {
+			    diff = theBuffer.getDiff();
+			  }catch (Exception e) {}
+			Buffer buffer = EToolkit.getInstance().newBuffer("*Diff*");
+			buffer.insert(diff,null,0);
+			Buffer.setCurrent(buffer);
+			EWindow selectedWindow = getSelected();
+			selectedWindow.split(buffer, 50, false);
+			cancelExit = true;
+			break;
+		      case 4: theBuffer.save();finished = true;break;
+		      case 5: theBuffer.save();saveAll = true;break;
+		      case 6: noAll = true;break;
+		      }
+		    if (finished)
+		      {
+			if (k.hasMoreElements())
+			  promptOnExit = true;
+			break;
+		      }
+		  }
+	      }
+	    catch (Exception e){}
+	  }
+	if (promptOnExit)
+	  {
+	    if (frame.showQuestionMessage("Modified buffers exist; exit anyway?") == 0)
+	      java.lang.System.exit(0);
+	  }
+	else if (cancelExit)
+	  {
+	    return;
+	  }
+	else
+	  {
+	    java.lang.System.exit(0);
+	  }
+    }
 
   public abstract void unselect();
   

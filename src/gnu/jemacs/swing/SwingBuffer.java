@@ -10,6 +10,8 @@ import gnu.mapping.*;
 import gnu.lists.CharSeq;
 import javax.swing.text.*;
 import java.awt.Color;
+import java.util.*;
+import gnu.expr.*;
 
 /** An Emacs buffer implemented using the Swing toolkits. */
 
@@ -119,6 +121,135 @@ public class SwingBuffer extends Buffer
   {
     remove(nextIndex(ipos), count);
   }
+  private String getBufferAsString() throws Exception
+  {
+    byte[] buffer = new byte[1024];				     
+    int length = getLength();
+    int offset = 0;
+    Segment segment = new Segment();
+    int numRead = 0;
+    while (offset < length) {
+      int count = length;
+      if (count > 4096)
+        count = 4096;
+      try
+        {
+          doc.getText(offset, count, segment);
+        }
+      catch (BadLocationException e)
+        {
+          throw e;
+        }
+      offset += count;
+    }
+    StringBuilder bufferSB = new StringBuilder();
+    for (char c : segment.array)
+      {
+        bufferSB.append(c);
+      }
+    return bufferSB.toString();
+  }
+
+  private String getFileAsString(Reader fileReader) throws Exception
+  {
+    BufferedReader reader = new BufferedReader(fileReader);
+    StringBuilder sb = new StringBuilder();
+    String line = null;
+    try
+      {
+        while ((line = reader.readLine()) != null)
+          {
+            sb.append(line + "\n");
+          }
+        fileReader.close();
+      }
+    catch (IOException ioe)
+      {
+        throw ioe;
+      }
+    return sb.toString();
+  }
+
+  public boolean upToDate() throws Exception
+  {
+    if (getFileName() == null)
+      return true;
+    Reader fileReader;
+    try 
+      {
+        fileReader = new InputStreamReader(new FileInputStream(getFileName()));
+      } 
+    catch (FileNotFoundException e) 
+      {
+        return false;
+      }
+    char[] bufferCharArray = getBufferAsString().trim().toCharArray();
+    char[] fileCharArray = getFileAsString(fileReader).trim().toCharArray();
+    if (!Arrays.equals(fileCharArray, bufferCharArray)) return false;
+    return true;
+  }
+
+  public String getDiff() throws Exception
+  {
+    if (getFileName() == null)
+      return "";
+    Reader fileReader;
+    try 
+      {
+        fileReader = new InputStreamReader(new FileInputStream(getFileName()));
+      } 
+    catch (FileNotFoundException e) 
+      {
+        return "";
+      }
+    return diff(getBufferAsString(), getFileAsString(fileReader));
+  }
+
+  public String diff(String bufferString, String fileString)
+  {
+    System.out.println("bufferString : " + bufferString);
+    System.out.println("fileString : " + fileString);
+    String[] x = bufferString.split("\\n");
+    String[] y = fileString.split("\\n");
+
+    // number of lines of each file
+    int M = x.length;
+    int N = y.length;
+
+    // opt[i][j] = length of LCS of x[i..M] and y[j..N]
+    int[][] opt = new int[M+1][N+1];
+
+    // compute length of LCS and all subproblems via dynamic programming
+    for (int i = M-1; i >= 0; i--) {
+      for (int j = N-1; j >= 0; j--) {
+        if (x[i].equals(y[j]))
+          opt[i][j] = opt[i+1][j+1] + 1;
+        else 
+          opt[i][j] = Math.max(opt[i+1][j], opt[i][j+1]);
+      }
+    }
+
+    // recover LCS itself and print out non-matching lines to standard output
+    int i = 0, j = 0;
+    StringBuffer stringDiff = new StringBuffer();
+    while(i < M && j < N) {
+      if (x[i].equals(y[j])) {
+        i++;
+        j++;
+      }
+      else if (opt[i+1][j] >= opt[i][j+1]) stringDiff.append("< " + x[i++] + "\n");
+      else                                 stringDiff.append("> " + y[j++] + "\n");
+    }
+
+    // dump out one remainder of one string if the other is exhausted
+    while(i < M || j < N) {
+      if      (i == M) stringDiff.append("> " + y[j++] + "\n");
+      else if (j == N) stringDiff.append("< " + x[i++] + "\n");
+    }
+    return stringDiff.toString();
+  }
+
+
 
   public void save(Writer out)
     throws Exception

@@ -89,7 +89,11 @@ public abstract class EFrame
 
   public abstract void showAboutMessage ();
 
+  public abstract int showQuestionMessage(String msg);
+
   public abstract void showInfoMessage (String msg);
+
+  public abstract int showCancelQuestionMessage(String msg);
 
   public String toString()
   {

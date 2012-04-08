@@ -71,6 +71,10 @@ public abstract class Buffer extends AbstractSequence implements CharSeq
 
   public abstract CharSeq getStringContent ();
 
+  public abstract boolean upToDate () throws Exception;
+
+  public abstract String getDiff() throws Exception;
+
   /**
    * @see gnu.lists.CharSeq#charAt(int)
    */
@@ -154,6 +158,11 @@ public abstract class Buffer extends AbstractSequence implements CharSeq
   public void consume(int start, int count, gnu.lists.Consumer out)
   {
     getStringContent().consume(start, count, out);
+  }
+
+  public static java.util.Hashtable getFileBuffers ()
+  {
+    return fileBuffers;
   }
 
   public static Buffer findFile(String fname)

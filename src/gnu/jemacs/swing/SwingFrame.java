@@ -4,6 +4,8 @@
 package gnu.jemacs.swing;
 import gnu.jemacs.buffer.*;
 import gnu.lists.LList;
+import java.awt.event.*;
+import java.awt.*;
 
 import javax.swing.*;
 
@@ -31,7 +33,7 @@ public class SwingFrame extends EFrame
     contents = window.wrap();
     jframe = new JFrame(defaultName());
     jframe.getContentPane().add(contents);
-    jframe.setSize(600, 400);
+    jframe.setSize(800, 600);
     jframe.setVisible(true);
     jframe.setTitle("JEmacs");
     menuBar = new JMenuBar();
@@ -61,10 +63,23 @@ public class SwingFrame extends EFrame
     JOptionPane.showMessageDialog(jframe, aboutMessage());
   }
 
+  public int showCancelQuestionMessage(String msg)
+  {
+    CloseDialog dialog = new CloseDialog(jframe,msg);
+    return dialog.getAnswer();
+  }
+
   public void showInfoMessage(String msg) 
   {
     JOptionPane.showMessageDialog(jframe, msg);
   }
+
+  public int showQuestionMessage(String msg)
+    {
+	Object[] options = {"YES","NO","View This Buffer"};
+	return JOptionPane.showConfirmDialog(jframe, msg, "Question", JOptionPane.YES_NO_OPTION);
+    }
+
 
   public String ask(String prompt)
   {
@@ -90,12 +105,12 @@ public class SwingFrame extends EFrame
   }
 
   
-  public String toString()
-  {
-    StringBuffer sbuf = new StringBuffer(100);
-    sbuf.append("#<frame #");
-    sbuf.append(id);
-    if (jframe != null)
+    public String toString()
+    {
+	StringBuffer sbuf = new StringBuffer(100);
+	sbuf.append("#<frame #");
+	sbuf.append(id);
+	if (jframe != null)
       {
 	sbuf.append(" size: ");
 	sbuf.append(jframe.getSize());
@@ -105,5 +120,73 @@ public class SwingFrame extends EFrame
     sbuf.append('>');
     return sbuf.toString();
   }
-}
 
+    private class CloseDialog extends JDialog implements ActionListener 
+    {
+      private JPanel closePanel = null;
+      private JButton yesButton = null;
+      private JButton noButton = null;
+      private JButton viewButton = null;
+      private JButton changesButton = null;
+      private JButton saveButton = null;
+      private JButton saveAllButton = null;
+      private JButton noAllButton = null;
+      private JPanel buttonPanel = null;
+      private int answer = 0;
+      public int getAnswer() { return answer; }
+
+      public CloseDialog(JFrame frame, String msg)
+      {
+	  super(frame, "Question", true);
+	  closePanel = new JPanel();
+	  buttonPanel = new JPanel();
+	  closePanel.setLayout(new BorderLayout());
+	  closePanel.add(new JLabel(msg), BorderLayout.NORTH);
+	  closePanel.add(buttonPanel, BorderLayout.SOUTH);
+	  yesButton = new JButton("Yes");
+	  yesButton.addActionListener(this);
+	  buttonPanel.add(yesButton);
+	  noButton = new JButton("No");
+	  noButton.addActionListener(this);
+	  buttonPanel.add(noButton);
+	  viewButton = new JButton("View This Buffer");
+	  viewButton.addActionListener(this);
+	  buttonPanel.add(viewButton);
+	  changesButton = new JButton("View Changes In This Buffer");
+	  changesButton.addActionListener(this);
+	  buttonPanel.add(changesButton);
+	  saveButton = new JButton("Save This But No More");
+	  saveButton.addActionListener(this);
+	  buttonPanel.add(saveButton);
+	  saveAllButton = new JButton("Save All Buffers");
+	  saveAllButton.addActionListener(this);
+	  buttonPanel.add(saveAllButton);
+	  noAllButton = new JButton("No For All");
+	  noAllButton.addActionListener(this);
+	  buttonPanel.add(noAllButton);
+	  getContentPane().add(closePanel);
+	  pack();
+	  setLocationRelativeTo(frame);
+	  setVisible(true);
+      }
+
+      public void actionPerformed(ActionEvent e)
+      {
+	  if(yesButton == e.getSource())
+	      answer = 0;
+	  else if (noButton == e.getSource())
+	      answer = 1;
+	  else if (viewButton == e.getSource())
+	      answer = 2;
+	  else if (changesButton == e.getSource())
+	      answer = 3;
+	  else if (saveButton == e.getSource())
+	      answer = 4;
+	  else if (saveAllButton == e.getSource())
+	      answer = 5;
+	  else if (noAllButton == e.getSource())
+	      answer = 6;
+	  setVisible(false);
+      }
+  }
+}

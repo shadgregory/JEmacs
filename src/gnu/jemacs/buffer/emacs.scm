@@ -106,7 +106,9 @@
 	 (vector "New Frame" make-frame)
 	 (vector "Delete Frame" delete-frame)
 	 "------"
-	 #("Save" save-buffer active: (buffer-modified-p)))
+	 #("Save" save-buffer active: (buffer-modified-p))
+	 "------"
+	 #("Quit" save-buffers-kill-emacs))
    (list "Tools"
 	 (vector "ELisp interaction" elisp-interaction-window)
 	 (vector "Scheme interaction" scheme-interaction-window))
@@ -143,6 +145,10 @@
 	 #!optional (filename
 		     (read-from-minibuffer "Find file in other frame: ")))
   (switch-to-buffer-other-frame (find-file-noselect filename)))
+
+(define (save-buffers-kill-emacs
+	 #!optional (window :: <window> (selected-window)))
+  (invoke (as <window> window) 'saveBuffersKillEmacs))
 
 (define (save-buffer #!optional (buffer :: <buffer> (current-buffer)))
   (if (buffer-file-name buffer)

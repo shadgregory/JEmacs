@@ -478,6 +478,9 @@
 	  (gnu.jemacs.lang.ELisp:asChar ch)
 	  (if (eq? count '()) 1 count) #!null))
 
+(define (indent-for-tab-command)
+  (insert-char #\tab))
+
 (define (insert #!rest (args :: <Object[]>))
   (let ((buffer :: <buffer> (current-buffer)))
     (invoke buffer 'insertAll args #!null)))
@@ -544,6 +547,7 @@
 (define-key global-map #(up) previous-line)
 (define-key global-map #(left) backward-char)
 (define-key global-map #(right) forward-char)
+(define-key global-map "\C-i" indent-for-tab-command)
 (define-key global-map "\C-a" beginning-of-line)
 (define-key global-map "\C-b" backward-char)
 (define-key global-map "\C-n" next-line)

@@ -277,7 +277,8 @@ public class SwingBuffer extends Buffer
       style = defaultStyle;
     try
       {
-        doc.insertString(index, string, (Style) style);
+        //doc.insertString(index, string, (Style) style);
+        doc.insertString(index, string, null);
       }
     catch (javax.swing.text.BadLocationException ex)
       {

@@ -1,2 +1,5 @@
-This project is a fork of Kawa, and is intended to concentrate on the JEmacs
-editor.
+This project is a fork of Kawa. It's purpose is to concentrate on the JEmacs
+editor. To build using the build.scm file : 
+
+
+java -classpath $CLASSPATH:lib/kawa.jar:lib/kawa-tools.jar:lib/ant.jar kawa.repl -f build.scm 
